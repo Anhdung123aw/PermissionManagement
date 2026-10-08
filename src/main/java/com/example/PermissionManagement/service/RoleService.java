@@ -3,8 +3,6 @@ package com.example.PermissionManagement.service;
 import com.example.PermissionManagement.dto.request.RoleRequest;
 import com.example.PermissionManagement.dto.response.RoleResponse;
 import com.example.PermissionManagement.entity.RoleEntity;
-import com.example.PermissionManagement.exception.AppException;
-import com.example.PermissionManagement.exception.ErrorCode;
 import com.example.PermissionManagement.repository.PermissionRepository;
 import com.example.PermissionManagement.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;

@@ -19,28 +19,24 @@ import java.util.List;
 public class UserController {
     private  final UserService userService;
     @PostMapping
-    @PreAuthorize("hasAuthority('USER_MAKER')")
     public ApiResponse<UserResponse> createUser(@RequestBody UserCreationRequest request){
         return ApiResponse.<UserResponse>builder()
                 .result(userService.createUser(request))
                 .build();
     }
     @GetMapping
-    @PreAuthorize("hasAnyAuthority('USER_VIEWER', 'USER_MAKER', 'USER_CHECKER')")
     public ApiResponse<List<UserResponse>> getUsers() {
         return ApiResponse.<List<UserResponse>>builder()
                 .result(userService.getUsers())
                 .build();
     }
     @GetMapping("/{userId}")
-    @PreAuthorize("hasAnyAuthority('USER_VIEWER', 'USER_MAKER', 'USER_CHECKER')")
     public ApiResponse<UserResponse> getUser(@PathVariable Long userId) {
         return ApiResponse.<UserResponse>builder()
                 .result(userService.getUser(userId))
                 .build();
     }
     @PutMapping("/{userId}")
-    @PreAuthorize("hasAuthority('USER_MAKER')")
     public ApiResponse<UserResponse> updateUser(
             @PathVariable Long userId,
             @RequestBody UserUpdateRequest request) {
@@ -49,7 +45,6 @@ public class UserController {
                 .build();
     }
     @DeleteMapping("/{userId}")
-    @PreAuthorize("hasAuthority('USER_MAKER')")
     public ApiResponse<String> deleteUser(@PathVariable Long userId) {
         userService.deleteUser(userId);
         return ApiResponse.<String>builder()

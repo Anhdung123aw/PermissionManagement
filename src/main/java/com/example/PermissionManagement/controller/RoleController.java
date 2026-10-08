@@ -19,21 +19,18 @@ public class RoleController {
     private final RoleService roleService;
 
     @PostMapping
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ApiResponse<RoleResponse> createRole(@RequestBody RoleRequest request) {
         return ApiResponse.<RoleResponse>builder()
                 .result(roleService.createRole(request))
                 .build();
     }
     @GetMapping
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ApiResponse<List<RoleResponse>> getRoles() {
         return ApiResponse.<List<RoleResponse>>builder()
                 .result(roleService.getRoles())
                 .build();
     }
     @DeleteMapping("/{roleCode}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ApiResponse<String> deleteRole(@PathVariable String roleCode) {
         roleService.deleteRole(roleCode);
         return ApiResponse.<String>builder()
