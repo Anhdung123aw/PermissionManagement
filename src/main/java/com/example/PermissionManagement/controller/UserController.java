@@ -25,12 +25,6 @@ public class UserController {
                 .result(userService.createUser(request))
                 .build();
     }
-    @GetMapping("/my-info")
-    public ApiResponse<UserResponse> getMyInfo(){
-        return ApiResponse.<UserResponse>builder()
-                .result(userService.getMyInfo())
-                .build();
-    }
     @GetMapping
     @PreAuthorize("hasAnyAuthority('USER_VIEWER', 'USER_MAKER', 'USER_CHECKER')")
     public ApiResponse<List<UserResponse>> getUsers() {

@@ -46,7 +46,6 @@ public class SecurityConfig {
     httpSecurity.csrf(AbstractHttpConfigurer::disable);
     return httpSecurity.build();
 }
-    // Tùy biến converter: giữ nguyên tên quyền (không tự động thêm SCOPE_)
     @Bean
     JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();

@@ -62,15 +62,6 @@ public class UserService {
         userRepository.deleteById(userId);
     }
 
-
-    public UserResponse getMyInfo() {
-        var context = SecurityContextHolder.getContext();
-        String name = context.getAuthentication().getName();
-        UserEntity user = userRepository.findByUserName(name)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        return new UserResponse(user);
-    }
-
     public List<UserResponse> getUsers(){
         return userRepository.findAll().stream().map(UserResponse::new).toList();
 
