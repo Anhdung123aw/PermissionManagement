@@ -72,9 +72,9 @@ public class DynamicAuthorizationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request,response);
             return;
         }
-        log.warn("User {} bá»‹ tá»« chá»‘i truy cáº­p {} {}: Thiáº¿u quyá»n {}", username, method, path, requiredPermission);
+        log.warn("User {} ban tao chua co quyen {} {}: Thieu quyen {}", username, method, path, requiredPermission);
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
         response.setContentType("application/json;charset=UTF-8");
-        response.getWriter().write("{\"code\": 403, \"message\": \"Báº¡n khÃ´ng cÃ³ quyá»n thá»±c hiá»‡n chá»©c nÄƒng nÃ y!\"}");
+        response.getWriter().write("{\"code\": 403, \"message\": \"Ban kh co quyen truy cap chuc nang nay!\"}");
     }
 }
