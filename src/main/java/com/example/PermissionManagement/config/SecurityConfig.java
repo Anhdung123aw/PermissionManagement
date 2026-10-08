@@ -1,7 +1,7 @@
 package com.example.PermissionManagement.config;
 
-import lombok.experimental.NonFinal;
-import org.springframework.beans.factory.annotation.Value;
+import com.example.PermissionManagement.sercurity.JWTFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -9,59 +9,59 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-
-import javax.crypto.spec.SecretKeySpec;
-
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-    @NonFinal
-    @Value("${jwt.signerKey}")
-    protected String signerKey;
-
+    private final JWTFilter jwtFilter;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception{
-        httpSecurity.authorizeHttpRequests(request ->
-                request.requestMatchers(HttpMethod.POST,"/auth/token").permitAll()
-                        .requestMatchers(HttpMethod.POST,"/users").permitAll()
-                        .anyRequest().authenticated());
-        httpSecurity.oauth2ResourceServer(oauth2 ->
-                oauth2.jwt(jwtConfigurer ->
-                        jwtConfigurer.decoder(jwtDecoder())
-                                .jwtAuthenticationConverter(jwtAuthenticationConverter()))
-        );
-    httpSecurity.csrf(AbstractHttpConfigurer::disable);
-    return httpSecurity.build();
-}
-    @Bean
-    JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
-        jwtGrantedAuthoritiesConverter.setAuthorityPrefix(""); // Giữ nguyên tên: "USER_CREATE", "ROLE_ADMIN"
-        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
-        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
-        return jwtAuthenticationConverter;
+    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
+        httpSecurity
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(request ->
+                        request.requestMatchers(HttpMethod.POST, "/auth/token").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/auth/logout").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/users").permitAll()
+                                .anyRequest().authenticated()
+                )
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return httpSecurity.build();
     }
+
     @Bean
-    JwtDecoder jwtDecoder() {
-        SecretKeySpec secretKeySpec = new SecretKeySpec(signerKey.getBytes(), "HmacSHA512");
-        return NimbusJwtDecoder
-                .withSecretKey(secretKeySpec)
-                .macAlgorithm(MacAlgorithm.HS512)
-                .build();
+    public CorsFilter corsFilter() {
+        return new CorsFilter(corsConfigurationSource());
     }
+
+    private UrlBasedCorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of("http://localhost:4200"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(10);

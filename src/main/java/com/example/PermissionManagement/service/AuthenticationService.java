@@ -12,6 +12,7 @@ import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSObject;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +33,7 @@ import java.util.UUID;
 @Slf4j
 public class AuthenticationService {
     private final UserRepository userRepository;
+    private final RedisTokenService redisTokenService;
 
     @NonFinal
     @Value("${jwt.signerKey}")
@@ -52,8 +54,19 @@ public class AuthenticationService {
         if (!authenticated) throw new AppException(ErrorCode.UNAUTHENTICATED);
 
         var token = generateToken(user);
+        redisTokenService.saveToken(user.getUserName(),token,VALID_DURATION);
 
         return AuthenticationResponse.builder().token(token).authenticated(true).build();
+    }
+    public void logout(String token) {
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            String username = signedJWT.getJWTClaimsSet().getSubject();
+            redisTokenService.deleteToken(username);
+        } catch (Exception e) {
+            log.error("Logout error: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
     }
     private String generateToken(UserEntity user) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
