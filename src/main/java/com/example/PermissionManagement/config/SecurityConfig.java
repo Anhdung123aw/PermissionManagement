@@ -1,5 +1,6 @@
 package com.example.PermissionManagement.config;
 
+import com.example.PermissionManagement.sercurity.DynamicAuthorizationFilter;
 import com.example.PermissionManagement.sercurity.JWTFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -27,6 +28,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JWTFilter jwtFilter;
+    private final DynamicAuthorizationFilter dynamicAuthorizationFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
@@ -40,7 +42,8 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.POST, "/users").permitAll()
                                 .anyRequest().authenticated()
                 )
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(dynamicAuthorizationFilter, JWTFilter.class);
 
         return httpSecurity.build();
     }

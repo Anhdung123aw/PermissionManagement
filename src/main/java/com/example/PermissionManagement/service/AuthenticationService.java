@@ -25,8 +25,10 @@ import com.nimbusds.jose.Payload;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.Set;
 import java.util.StringJoiner;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -55,6 +57,14 @@ public class AuthenticationService {
 
         var token = generateToken(user);
         redisTokenService.saveToken(user.getUserName(),token,VALID_DURATION);
+
+        // Gom toan bo Per tu cac role cua user de luu Redis
+        Set<String> userPermissions = user.getRoles().stream()
+                .filter( r -> r.getPermissions() != null)
+                .flatMap( r -> r.getPermissions().stream())
+                .map( p -> p.getPermissionCode())
+                .collect(Collectors.toSet());
+        redisTokenService.saveUserPermissions(user.getUserName(), userPermissions, VALID_DURATION);
 
         return AuthenticationResponse.builder().token(token).authenticated(true).build();
     }
@@ -96,15 +106,9 @@ public class AuthenticationService {
     private String buildScope(UserEntity user) {
         StringJoiner stringJoiner = new StringJoiner(" ");
         if (!CollectionUtils.isEmpty(user.getRoles())) {
-            user.getRoles().forEach(role -> {
-                stringJoiner.add("ROLE_" + role.getRoleCode());
-                if (!CollectionUtils.isEmpty(role.getPermissions())) {
-                    role.getPermissions().forEach(permission -> {
-                        stringJoiner.add(permission.getPermissionCode());
-                    });
-                }
-            });
+            user.getRoles().forEach(role -> stringJoiner.add("ROLE_" + role.getRoleCode()));
         }
         return stringJoiner.toString();
     }
+
 }
