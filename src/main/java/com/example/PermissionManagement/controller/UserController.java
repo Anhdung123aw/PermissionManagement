@@ -1,8 +1,7 @@
 package com.example.PermissionManagement.controller;
 
-import com.example.PermissionManagement.dto.request.ApiResponse;
-import com.example.PermissionManagement.dto.request.UserCreationRequest;
-import com.example.PermissionManagement.dto.request.UserUpdateRequest;
+import com.example.PermissionManagement.dto.request.*;
+import com.example.PermissionManagement.dto.response.SearchResponse;
 import com.example.PermissionManagement.dto.response.UserResponse;
 import com.example.PermissionManagement.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -51,5 +50,12 @@ public class UserController {
                 .result("User has been deleted")
                 .build();
     }
+    @PostMapping("/search")
+    public ApiResponse<SearchResponse<UserResponse>> searchUsers(@RequestBody SearchRequest<UserFilterRequest> request) {
+        return ApiResponse.<SearchResponse<UserResponse>>builder()
+                .result(userService.searchUsers(request))
+                .build();
+    }
+
 
 }
