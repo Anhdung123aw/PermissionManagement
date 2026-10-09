@@ -22,7 +22,6 @@ public class RedisTokenService {
     private String getKey(String username) {
         return TOKEN_KEY_PREFIX + username;
     }
-    // Luu token vao redis khi dn
     public void saveToken(String username,String token,long durationInSeconds){
         try {
             redisTemplate.opsForValue().set(
