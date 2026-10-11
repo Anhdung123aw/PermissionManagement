@@ -3,6 +3,7 @@ package com.example.PermissionManagement.service;
 import com.example.PermissionManagement.Utils.PageableUtils;
 import com.example.PermissionManagement.dto.request.RoleFilterRequest;
 import com.example.PermissionManagement.dto.request.RoleRequest;
+import com.example.PermissionManagement.dto.request.RoleUpdateRequest;
 import com.example.PermissionManagement.dto.request.SearchRequest;
 import com.example.PermissionManagement.dto.response.RoleResponse;
 import com.example.PermissionManagement.dto.response.SearchResponse;
@@ -51,7 +52,37 @@ public class RoleService {
                 .toList();
     }
 
+    public RoleResponse getRole(String roleCode) {
+        RoleEntity role = roleRepository.findById(roleCode)
+                .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
+        return new RoleResponse(role);
+    }
+
+    // Cập nhật thông tin và quyền hạn của Vai trò
+    @Transactional
+    public RoleResponse updateRole(String roleCode, RoleUpdateRequest request) {
+        RoleEntity role = roleRepository.findById(roleCode)
+                .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
+
+        if (StringUtils.hasText(request.getRoleName())) {
+            role.setRoleName(request.getRoleName().trim());
+        }
+        if (request.getDescription() != null) {
+            role.setDescription(request.getDescription().trim());
+        }
+        if (request.getPermissions() != null) {
+            var permissions = permissionRepository.findAllById(request.getPermissions());
+            role.setPermissions(new HashSet<>(permissions));
+        }
+
+        role = roleRepository.save(role);
+        return new RoleResponse(role);
+    }
+
     public void deleteRole(String roleCode) {
+        if (!roleRepository.existsById(roleCode)) {
+            throw new AppException(ErrorCode.ROLE_NOT_EXISTED);
+        }
         roleRepository.deleteById(roleCode);
     }
 

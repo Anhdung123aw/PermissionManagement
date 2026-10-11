@@ -3,6 +3,7 @@ package com.example.PermissionManagement.service;
 import com.example.PermissionManagement.Utils.PageableUtils;
 import com.example.PermissionManagement.dto.request.PermissionFilterRequest;
 import com.example.PermissionManagement.dto.request.PermissionRequest;
+import com.example.PermissionManagement.dto.request.PermissionUpdateRequest;
 import com.example.PermissionManagement.dto.request.SearchRequest;
 import com.example.PermissionManagement.dto.response.PermissionResponse;
 import com.example.PermissionManagement.dto.response.SearchResponse;
@@ -44,7 +45,33 @@ public class PermissionService {
                 .toList();
     }
 
+    public PermissionResponse getPermission(String permissionCode) {
+        PermissionEntity entity = permissionRepository.findById(permissionCode)
+                .orElseThrow(() -> new AppException(ErrorCode.PERMISSION_NOT_EXISTED));
+        return new PermissionResponse(entity);
+    }
+
+    // Cập nhật tên hiển thị và mô tả của Quyền hạn (Mã quyền là bất biến)
+    @Transactional
+    public PermissionResponse updatePermission(String permissionCode, PermissionUpdateRequest request) {
+        PermissionEntity entity = permissionRepository.findById(permissionCode)
+                .orElseThrow(() -> new AppException(ErrorCode.PERMISSION_NOT_EXISTED));
+
+        if (StringUtils.hasText(request.getPermissionName())) {
+            entity.setPermissionName(request.getPermissionName().trim());
+        }
+        if (request.getDescription() != null) {
+            entity.setDescription(request.getDescription().trim());
+        }
+
+        entity = permissionRepository.save(entity);
+        return new PermissionResponse(entity);
+    }
+
     public void deletePermission(String permissionCode) {
+        if (!permissionRepository.existsById(permissionCode)) {
+            throw new AppException(ErrorCode.PERMISSION_NOT_EXISTED);
+        }
         permissionRepository.deleteById(permissionCode);
     }
 

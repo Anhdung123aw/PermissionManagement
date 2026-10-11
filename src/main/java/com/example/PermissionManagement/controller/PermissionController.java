@@ -3,6 +3,7 @@ package com.example.PermissionManagement.controller;
 import com.example.PermissionManagement.dto.request.ApiResponse;
 import com.example.PermissionManagement.dto.request.PermissionFilterRequest;
 import com.example.PermissionManagement.dto.request.PermissionRequest;
+import com.example.PermissionManagement.dto.request.PermissionUpdateRequest;
 import com.example.PermissionManagement.dto.request.SearchRequest;
 import com.example.PermissionManagement.dto.response.PermissionResponse;
 import com.example.PermissionManagement.dto.response.SearchResponse;
@@ -29,6 +30,22 @@ public class PermissionController {
     public ApiResponse<List<PermissionResponse>> getPermissions() {
         return ApiResponse.<List<PermissionResponse>>builder()
                 .result(permissionService.getPermissions())
+                .build();
+    }
+
+    @GetMapping("/{permissionCode}")
+    public ApiResponse<PermissionResponse> getPermission(@PathVariable String permissionCode) {
+        return ApiResponse.<PermissionResponse>builder()
+                .result(permissionService.getPermission(permissionCode))
+                .build();
+    }
+
+    @PutMapping("/{permissionCode}")
+    public ApiResponse<PermissionResponse> updatePermission(
+            @PathVariable String permissionCode,
+            @RequestBody PermissionUpdateRequest request) {
+        return ApiResponse.<PermissionResponse>builder()
+                .result(permissionService.updatePermission(permissionCode, request))
                 .build();
     }
 

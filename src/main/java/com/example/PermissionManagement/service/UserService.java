@@ -12,6 +12,9 @@ import com.example.PermissionManagement.exception.AppException;
 import com.example.PermissionManagement.exception.ErrorCode;
 import com.example.PermissionManagement.repository.RoleRepository;
 import com.example.PermissionManagement.repository.UserRepository;
+import com.example.PermissionManagement.service.RedisTokenService;
+import com.example.PermissionManagement.entity.PermissionEntity;
+import java.util.stream.Collectors;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +38,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RedisTokenService redisTokenService;
 
     public UserResponse createUser(UserCreationRequest request){
         if(userRepository.existsByUserName(request.getUserName())){

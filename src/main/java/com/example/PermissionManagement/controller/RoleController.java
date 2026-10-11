@@ -3,6 +3,7 @@ package com.example.PermissionManagement.controller;
 import com.example.PermissionManagement.dto.request.ApiResponse;
 import com.example.PermissionManagement.dto.request.RoleFilterRequest;
 import com.example.PermissionManagement.dto.request.RoleRequest;
+import com.example.PermissionManagement.dto.request.RoleUpdateRequest;
 import com.example.PermissionManagement.dto.request.SearchRequest;
 import com.example.PermissionManagement.dto.response.RoleResponse;
 import com.example.PermissionManagement.dto.response.SearchResponse;
@@ -31,6 +32,22 @@ public class RoleController {
     public ApiResponse<List<RoleResponse>> getRoles() {
         return ApiResponse.<List<RoleResponse>>builder()
                 .result(roleService.getRoles())
+                .build();
+    }
+
+    @GetMapping("/{roleCode}")
+    public ApiResponse<RoleResponse> getRole(@PathVariable String roleCode) {
+        return ApiResponse.<RoleResponse>builder()
+                .result(roleService.getRole(roleCode))
+                .build();
+    }
+
+    @PutMapping("/{roleCode}")
+    public ApiResponse<RoleResponse> updateRole(
+            @PathVariable String roleCode,
+            @RequestBody RoleUpdateRequest request) {
+        return ApiResponse.<RoleResponse>builder()
+                .result(roleService.updateRole(roleCode, request))
                 .build();
     }
 
