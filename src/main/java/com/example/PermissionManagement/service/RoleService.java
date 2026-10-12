@@ -1,6 +1,7 @@
 package com.example.PermissionManagement.service;
 
 import com.example.PermissionManagement.Utils.PageableUtils;
+import com.example.PermissionManagement.config.HasPermissionCms;
 import com.example.PermissionManagement.dto.request.RoleFilterRequest;
 import com.example.PermissionManagement.dto.request.RoleRequest;
 import com.example.PermissionManagement.dto.request.RoleUpdateRequest;
@@ -32,7 +33,7 @@ import java.util.List;
 public class RoleService {
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
-
+    @HasPermissionCms(value={"ROLE_MAKER"})
     public RoleResponse createRole(RoleRequest request) {
         RoleEntity role = new RoleEntity();
         role.setRoleCode(request.getRoleCode());
@@ -45,13 +46,13 @@ public class RoleService {
         role = roleRepository.save(role);
         return new RoleResponse(role);
     }
-
+    @HasPermissionCms(value={"ROLE_VIEWER", "ROLE_CHECKER", "ROLE_MAKER"})
     public List<RoleResponse> getRoles() {
         return roleRepository.findAll().stream()
                 .map(RoleResponse::new)
                 .toList();
     }
-
+    @HasPermissionCms(value={"ROLE_VIEWER", "ROLE_CHECKER", "ROLE_MAKER"})
     public RoleResponse getRole(String roleCode) {
         RoleEntity role = roleRepository.findById(roleCode)
                 .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
@@ -59,7 +60,7 @@ public class RoleService {
     }
 
     // Cập nhật thông tin và quyền hạn của Vai trò
-    @Transactional
+    @HasPermissionCms(value={"ROLE_MAKER"})
     public RoleResponse updateRole(String roleCode, RoleUpdateRequest request) {
         RoleEntity role = roleRepository.findById(roleCode)
                 .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
@@ -78,7 +79,7 @@ public class RoleService {
         role = roleRepository.save(role);
         return new RoleResponse(role);
     }
-
+    @HasPermissionCms(value={"ROLE_MAKER"})
     public void deleteRole(String roleCode) {
         if (!roleRepository.existsById(roleCode)) {
             throw new AppException(ErrorCode.ROLE_NOT_EXISTED);
@@ -97,7 +98,7 @@ public class RoleService {
         }
     }
 
-    @Transactional(readOnly = true)
+    @HasPermissionCms(value={"ROLE_VIEWER", "ROLE_CHECKER", "ROLE_MAKER"})
     public SearchResponse<RoleResponse> searchRoles(SearchRequest<RoleFilterRequest> request) {
         validateSearch(request);
         Pageable pageable = PageableUtils.getPageable(request, "roleCode");

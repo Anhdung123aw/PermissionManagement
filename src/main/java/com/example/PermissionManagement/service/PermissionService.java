@@ -1,6 +1,7 @@
 package com.example.PermissionManagement.service;
 
 import com.example.PermissionManagement.Utils.PageableUtils;
+import com.example.PermissionManagement.config.HasPermissionCms;
 import com.example.PermissionManagement.dto.request.PermissionFilterRequest;
 import com.example.PermissionManagement.dto.request.PermissionRequest;
 import com.example.PermissionManagement.dto.request.PermissionUpdateRequest;
@@ -30,6 +31,7 @@ import java.util.List;
 public class PermissionService {
     private final PermissionRepository permissionRepository;
 
+    @HasPermissionCms(value={"PERMISSION_MAKER"})
     public PermissionResponse createPermission(PermissionRequest request){
         PermissionEntity entity = new PermissionEntity();
         entity.setPermissionCode(request.getPermissionCode());
@@ -38,13 +40,13 @@ public class PermissionService {
         entity = permissionRepository.save(entity);
         return new PermissionResponse(entity);
     }
-
+    @HasPermissionCms(value={"PERMISSION_VIEWER", "PERMISSION_CHECKER", "PERMISSION_MAKER"})
     public List<PermissionResponse> getPermissions() {
         return permissionRepository.findAll().stream()
                 .map(PermissionResponse::new)
                 .toList();
     }
-
+    @HasPermissionCms(value={"PERMISSION_VIEWER", "PERMISSION_CHECKER", "PERMISSION_MAKER"})
     public PermissionResponse getPermission(String permissionCode) {
         PermissionEntity entity = permissionRepository.findById(permissionCode)
                 .orElseThrow(() -> new AppException(ErrorCode.PERMISSION_NOT_EXISTED));
@@ -52,7 +54,7 @@ public class PermissionService {
     }
 
     // Cập nhật tên hiển thị và mô tả của Quyền hạn (Mã quyền là bất biến)
-    @Transactional
+    @HasPermissionCms(value={"PERMISSION_MAKER"})
     public PermissionResponse updatePermission(String permissionCode, PermissionUpdateRequest request) {
         PermissionEntity entity = permissionRepository.findById(permissionCode)
                 .orElseThrow(() -> new AppException(ErrorCode.PERMISSION_NOT_EXISTED));
@@ -67,7 +69,7 @@ public class PermissionService {
         entity = permissionRepository.save(entity);
         return new PermissionResponse(entity);
     }
-
+    @HasPermissionCms(value={"PERMISSION_MAKER"})
     public void deletePermission(String permissionCode) {
         if (!permissionRepository.existsById(permissionCode)) {
             throw new AppException(ErrorCode.PERMISSION_NOT_EXISTED);
@@ -86,7 +88,7 @@ public class PermissionService {
         }
     }
 
-    @Transactional(readOnly = true)
+    @HasPermissionCms(value={"PERMISSION_VIEWER", "PERMISSION_CHECKER", "PERMISSION_MAKER"})
     public SearchResponse<PermissionResponse> searchPermissions(SearchRequest<PermissionFilterRequest> request) {
         validateSearch(request);
         Pageable pageable = PageableUtils.getPageable(request, "permissionCode");
