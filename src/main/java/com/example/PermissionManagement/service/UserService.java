@@ -1,6 +1,7 @@
 package com.example.PermissionManagement.service;
 
 import com.example.PermissionManagement.Utils.PageableUtils;
+import com.example.PermissionManagement.config.HasPermissionCms;
 import com.example.PermissionManagement.dto.request.SearchRequest;
 import com.example.PermissionManagement.dto.request.UserCreationRequest;
 import com.example.PermissionManagement.dto.request.UserFilterRequest;
@@ -40,6 +41,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final RedisTokenService redisTokenService;
 
+    @HasPermissionCms(value={"USER_MAKER"})
     public UserResponse createUser(UserCreationRequest request){
         if(userRepository.existsByUserName(request.getUserName())){
             throw new AppException(ErrorCode.USER_EXISTED);
@@ -53,6 +55,7 @@ public class UserService {
 
         return new UserResponse(user);
     }
+    @HasPermissionCms(value={"USER_MAKER"})
     public UserResponse updateUser(Long userId, UserUpdateRequest request) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
@@ -69,18 +72,20 @@ public class UserService {
         user = userRepository.save(user);
         return new UserResponse(user);
     }
+    @HasPermissionCms(value={"USER_MAKER"})
     public void deleteUser(Long userId) {
         if (!userRepository.existsById(userId)) {
             throw new AppException(ErrorCode.USER_NOT_EXISTED);
         }
         userRepository.deleteById(userId);
     }
-
+    @HasPermissionCms(value={"USER_VIEWER", "USER_CHECKER", "USER_MAKER"})
     public List<UserResponse> getUsers(){
         return userRepository.findAll().stream().map(UserResponse::new).toList();
 
     }
 
+    @HasPermissionCms(value = {"USER_VIEWER", "USER_CHECKER", "USER_MAKER"})
     public UserResponse getUser(Long userId){
         UserEntity user = userRepository.findById(userId).orElseThrow(() ->
                 new AppException(ErrorCode.USER_NOT_EXISTED));
@@ -98,7 +103,7 @@ public class UserService {
         }
     }
     // 2. Pha Handle Search & Pagination
-    @Transactional(readOnly = true)
+    @HasPermissionCms(value={"USER_VIEWER", "USER_CHECKER", "USER_MAKER"})
     public SearchResponse<UserResponse> searchUsers(SearchRequest<UserFilterRequest> request) {
         // Validate dữ liệu đầu vào
         validateSearch(request);
@@ -119,7 +124,7 @@ public class UserService {
         };
         // Query Spring Data JPA
         Page<UserEntity> pageResult = userRepository.findAll(spec, pageable);
-        // Trả về SearchResponse chuẩn VAB
+        // Trả về SearchResponse
         List<UserResponse> data = pageResult.getContent().stream().map(UserResponse::new).toList();
         return new SearchResponse<>(data, pageResult.getTotalElements());
     }
