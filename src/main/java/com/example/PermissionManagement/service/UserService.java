@@ -7,7 +7,9 @@ import com.example.PermissionManagement.dto.request.UserCreationRequest;
 import com.example.PermissionManagement.dto.request.UserFilterRequest;
 import com.example.PermissionManagement.dto.request.UserUpdateRequest;
 import com.example.PermissionManagement.dto.response.SearchResponse;
+import com.example.PermissionManagement.dto.response.UserProfileResponse;
 import com.example.PermissionManagement.dto.response.UserResponse;
+import com.example.PermissionManagement.entity.RoleEntity;
 import com.example.PermissionManagement.entity.UserEntity;
 import com.example.PermissionManagement.exception.AppException;
 import com.example.PermissionManagement.exception.ErrorCode;
@@ -15,6 +17,8 @@ import com.example.PermissionManagement.repository.RoleRepository;
 import com.example.PermissionManagement.repository.UserRepository;
 import com.example.PermissionManagement.service.RedisTokenService;
 import com.example.PermissionManagement.entity.PermissionEntity;
+
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -127,6 +131,22 @@ public class UserService {
         // Trả về SearchResponse
         List<UserResponse> data = pageResult.getContent().stream().map(UserResponse::new).toList();
         return new SearchResponse<>(data, pageResult.getTotalElements());
+    }
+    public UserProfileResponse getMyProfile() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        UserEntity user = userRepository.findByUserName(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        Set<String> permissions = redisTokenService.getUserPermissions(username);
+        Set<String> roleCodes = user.getRoles() != null
+                ? user.getRoles().stream().map(RoleEntity::getRoleCode).collect(Collectors.toSet())
+                : Set.of();
+        return UserProfileResponse.builder()
+                .id(user.getId())
+                .userName(user.getUserName())
+                .email(user.getEmail())
+                .roles(roleCodes)
+                .permissions(permissions)
+                .build();
     }
 }
 

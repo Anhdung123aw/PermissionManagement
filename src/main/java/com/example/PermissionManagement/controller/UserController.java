@@ -2,6 +2,7 @@ package com.example.PermissionManagement.controller;
 
 import com.example.PermissionManagement.dto.request.*;
 import com.example.PermissionManagement.dto.response.SearchResponse;
+import com.example.PermissionManagement.dto.response.UserProfileResponse;
 import com.example.PermissionManagement.dto.response.UserResponse;
 import com.example.PermissionManagement.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -56,6 +57,13 @@ public class UserController {
                 .result(userService.searchUsers(request))
                 .build();
     }
+    @GetMapping("/my-profile")
+    public ApiResponse<UserProfileResponse> getMyProfile() {
+        return ApiResponse.<UserProfileResponse>builder()
+                .result(userService.getMyProfile())
+                .build();
+    }
+
 
 
 }
